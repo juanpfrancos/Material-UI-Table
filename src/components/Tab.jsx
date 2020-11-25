@@ -9,12 +9,22 @@ import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-
+import Container from '@material-ui/core/Container';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 const useStyles = makeStyles(theme => ({
   root: { margin: theme.spacing(1) * 2, textAlign: 'center' },
-  card: { margin: theme.spacing(1) * 2, maxWidth: 300 }
+  card: { margin: theme.spacing(1) * 2, maxWidth: 300 },
+  progress: { margin: theme.spacing(2) }
 }));
+
+
+function MaybeLoading({ loading }) {
+  const classes = useStyles();
+  return loading ? (
+    <CircularProgress className={classes.progress} />
+  ) : null;
+}
 
 
 function Tab(){
@@ -28,9 +38,12 @@ function Tab(){
     { name: 'Price', active: false, numeric: true },
     { name: 'Reference', active: false },
   ]);
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(async()=>{
     await peticionGet();
+    setLoading(false);
   },[])
 
   const peticionGet=async()=>{
@@ -96,9 +109,13 @@ function Tab(){
             ))}
           </TableBody>
         </Table>
-        <Button variant="contained" disabled={button} onClick={()=>peticionDelete()}>Eliminar</Button>
+        <MaybeLoading loading={loading} />
+        <Container>
+          <Button variant="contained" disabled={button} onClick={()=>peticionDelete()}>Eliminar</Button>
+          <Button variant="contained" disabled={button} >Editar</Button>
+        </Container>
       </Paper>
-        </>
+              </>
     )
 }
 
