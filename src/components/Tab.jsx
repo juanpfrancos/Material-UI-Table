@@ -1,4 +1,6 @@
 import React, { useState, useEffect} from 'react';
+import Add from './agregar'
+import Edit from './editar'
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
@@ -29,7 +31,8 @@ function MaybeLoading({ loading }) {
 
 function Tab(){
 
-  const [button, setButton]=useState(true); /*Disable Delete Button */
+  const [buttonDelete, setButtonDelete]=useState(true); /*Disable Delete Button */
+  const [buttonEdit, setButtonEdit]=useState(true); /*Disable Edit Button */
   const [rows, setRows]=useState([]);      /*Rows State*/
   const [selRow, setSelRow]=useState([]);  /*Row Selected State*/
   const [columns, setColumns] = useState([ /*Columns State*/
@@ -38,8 +41,9 @@ function Tab(){
     { name: 'Price', active: false, numeric: true },
     { name: 'Reference', active: false },
   ]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(true) /*Loading progress */
+  const [add, setAdd] = useState(false)
+  const [edit, setEdit] = useState(false)
 
   useEffect(async()=>{
     await peticionGet();
@@ -60,7 +64,7 @@ function Tab(){
       alert('Producto eliminado')
     })
   }
-
+  
   const onRowClick = id => () => {
     const newRows = [...rows];
     const index = rows.findIndex(row => row.id === id);
@@ -70,10 +74,19 @@ function Tab(){
     /*Añade al state el campo selected true a las filas seleccionadas*/
     newRows[index] = { ...row, selected: !row.selected }; 
     setRows(newRows);
-    setButton(false) /*Enable Delete Button Only when a row has checked */
+
+    //Habilita los botones editar y eliminar
+    setButtonDelete(false)
+    setButtonEdit(false)
+    //Desahabilita los botones editar y eliminar cuando hay mas de una selección
+    if(selections()>0){
+      setButtonEdit(true)
+      setButtonDelete(true)
+    }
   };
 
-  const selections = () => rows.filter(row => row.selected).length; /*Count selections number*/
+ const selections = () => rows.filter(row => row.selected).length; /*Count selections number*/
+ 
 
   const classes = useStyles();
     return (
@@ -111,11 +124,14 @@ function Tab(){
         </Table>
         <MaybeLoading loading={loading} />
         <Container>
-          <Button variant="contained" disabled={button} onClick={()=>peticionDelete()}>Eliminar</Button>
-          <Button variant="contained" disabled={button} >Editar</Button>
+          <Button variant="contained" disabled={buttonDelete} onClick={()=>peticionDelete()}>Eliminar</Button>
+          <Button variant="contained" disabled={buttonEdit} onClick={()=> setEdit(true)}>Editar</Button>
+          <Button variant="contained"  onClick={()=> setAdd(true)}>Nuevo</Button>
         </Container>
       </Paper>
-              </>
+      {add ? <Add />: null}
+      {edit ? <Edit id={selRow.id} product={selRow.name} price={selRow.price} reference={selRow.reference} />: null}
+      </>
     )
 }
 
